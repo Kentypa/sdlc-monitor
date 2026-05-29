@@ -1,0 +1,162 @@
+// Prisma Schema — SDLC Monitor
+// PostgreSQL 15
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Developer — участник команды (GitHub логин)
+model Developer {
+  id           String   @id @default(uuid())
+  login        String   @unique
+  name         String?
+  avatarUrl    String?
+  email        String?
+
+  // Рассчитанные метрики (обновляются при каждом sync)
+  burnoutIndex  Float    @default(0)
+  overtimeRatio Float    @default(0)
+
+  commits      Commit[]
+  pullRequests PullRequest[]
+  reviews      Review[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("developers")
+}
+
+// Repository — отслеживаемый GitHub репозиторий
+model Repository {
+  id            String   @id @default(uuid())
+  githubId      BigInt   @unique
+  fullName      String   @unique
+  owner         String
+  name          String
+  description   String?
+  isPrivate     Boolean  @default(false)
+  defaultBranch String   @default("main")
+
+  // Статус последней синхронизации
+  syncedAt     DateTime?
+  commitCount  Int       @default(0)
+  prCount      Int       @default(0)
+
+  commits      Commit[]
+  pullRequests PullRequest[]
+  snapshots    MetricSnapshot[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("repositories")
+}
+
+// Commit — один коммит в репозиторий
+model Commit {
+  id           String   @id @default(uuid())
+  sha          String   @unique
+  message      String
+
+  additions    Int      @default(0)
+  deletions    Int      @default(0)
+  changedFiles Int      @default(0)
+
+  committedAt  DateTime
+
+  // true если коммит в нерабочее время (>= 19:00 | < 09:00 | выходной)
+  isOvertime   Boolean  @default(false)
+
+  authorId     String
+  author       Developer  @relation(fields: [authorId], references: [id])
+
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id])
+
+  createdAt    DateTime @default(now())
+
+  @@index([authorId])
+  @@index([repositoryId])
+  @@index([committedAt])
+  @@map("commits")
+}
+
+// PullRequest — Pull Request на GitHub
+model PullRequest {
+  id       String   @id @default(uuid())
+  githubId BigInt
+  number   Int
+  title    String
+  state    String
+
+  createdAt DateTime
+  updatedAt DateTime
+  mergedAt  DateTime?
+  closedAt  DateTime?
+
+  // Lead Time: время от создания PR до мержа (в минутах)
+  leadTimeMins Int?
+
+  headBranch String?
+  baseBranch String?
+
+  authorId     String
+  author       Developer  @relation(fields: [authorId], references: [id])
+
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id])
+
+  reviews      Review[]
+
+  @@unique([repositoryId, number])
+  @@index([authorId])
+  @@index([repositoryId])
+  @@map("pull_requests")
+}
+
+// Review — Code Review (ревьювер проверяет PR)
+model Review {
+  id       String   @id @default(uuid())
+  githubId BigInt
+
+  state String
+  body  String?
+
+  submittedAt DateTime
+
+  reviewerId String
+  reviewer   Developer @relation(fields: [reviewerId], references: [id])
+
+  pullRequestId String
+  pullRequest   PullRequest @relation(fields: [pullRequestId], references: [id])
+
+  @@unique([githubId, pullRequestId])
+  @@index([reviewerId])
+  @@index([pullRequestId])
+  @@map("reviews")
+}
+
+// MetricSnapshot — снапшот рассчитанных метрик репозитория
+model MetricSnapshot {
+  id           String   @id @default(uuid())
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id])
+
+  calculatedAt DateTime @default(now())
+
+  // JSON-блобы с результатами расчётов для фронтенда
+  burnoutData    Json
+  graphData      Json
+  processData    Json
+  predictionData Json
+
+  @@index([repositoryId])
+  @@index([calculatedAt])
+  @@map("metric_snapshots")
+}

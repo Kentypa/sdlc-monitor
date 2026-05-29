@@ -1,0 +1,3 @@
+-- CreateTable для SDLC Monitor
+-- Эта миграция создаётся автоматически через: npx prisma migrate dev --name init
+-- Не редактируй этот файл вручную.
