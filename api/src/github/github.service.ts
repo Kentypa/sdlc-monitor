@@ -2,8 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Octokit } from '@octokit/rest';
 
-// ─── Типи відповідей GitHub API ────────────────────────────────────────────
-
 export interface GithubCommit {
   sha: string;
   commit: {
@@ -67,8 +65,6 @@ export interface GithubRepo {
   default_branch: string;
 }
 
-// ─── Статистика одного коміту (з getCommit) ────────────────────────────────
-
 export interface CommitStats {
   sha: string;
   additions: number;
@@ -91,29 +87,19 @@ export class GithubService {
     this.octokit = new Octokit({
       auth: token || undefined,
       log: {
-        debug: () => {},
-        info: () => {},
+        debug: () => { },
+        info: () => { },
         warn: (msg: string) => this.logger.warn(msg),
         error: (msg: string) => this.logger.error(msg),
       },
     });
   }
 
-  // ─── Отримання мета-інформації про репозиторій ─────────────────────────────
-  // API count: 1 запит
-
   async getRepository(owner: string, repo: string): Promise<GithubRepo> {
     this.logger.log(`Fetching repo metadata: ${owner}/${repo}`);
     const { data } = await this.octokit.repos.get({ owner, repo });
     return data as GithubRepo;
   }
-
-  // ─── Отримання комітів через пагінацію listCommits ─────────────────────────
-  // API count: ceil(limit / 100) запитів (максимум 1 при limit=100)
-  //
-  // ВАЖЛИВО: НЕ робимо окремий getCommit для кожного коміту.
-  // listCommits НЕ повертає stats (additions/deletions) — це нормально,
-  // stats отримуємо окремо батчами тільки для перших ~30 комітів.
 
   async fetchCommits(
     owner: string,
@@ -122,7 +108,7 @@ export class GithubService {
   ): Promise<GithubCommit[]> {
     this.logger.log(`Fetching up to ${limit} commits from ${owner}/${repo}...`);
     const allCommits: GithubCommit[] = [];
-    const perPage = Math.min(100, limit); // максимум для GitHub API
+    const perPage = Math.min(100, limit);
     let page = 1;
 
     while (allCommits.length < limit) {
@@ -138,7 +124,6 @@ export class GithubService {
 
       if (data.length === 0) break;
 
-      // Фільтруємо коміти без автора (GitHub Actions, bots)
       const validCommits = data.filter(
         (c) => c.author !== null && c.author.login,
       ) as GithubCommit[];
@@ -146,18 +131,13 @@ export class GithubService {
       allCommits.push(...validCommits);
       this.logger.debug(`Page ${page}: got ${data.length} commits (${validCommits.length} with author)`);
 
-      if (data.length < pageSize) break; // досягли кінця
+      if (data.length < pageSize) break;
       page++;
     }
 
-    this.logger.log(`✅ Fetched ${allCommits.length} commits total (${page} API call(s))`);
+    this.logger.log(`Fetched ${allCommits.length} commits total (${page} API call(s))`);
     return allCommits.slice(0, limit);
   }
-
-  // ─── Отримання stats для БАТЧУ комітів (послідовно, щоб не вбити ліміт) ───
-  // API count: batchSize запитів (рекомендовано max 30)
-  //
-  // Використовуємо for...of (НЕ Promise.all), щоб не паралелити 30+ запитів.
 
   async fetchCommitStatsBatch(
     owner: string,
@@ -181,12 +161,9 @@ export class GithubService {
       }
     }
 
-    this.logger.log(`✅ Fetched stats for ${result.size} commits`);
+    this.logger.log(`Fetched stats for ${result.size} commits`);
     return result;
   }
-
-  // ─── Отримання Pull Requests (відкриті + закриті) ──────────────────────────
-  // API count: ceil(limit / 100) * 2 (для closed і open) = максимум 2 запити при limit=100
 
   async fetchPullRequests(
     owner: string,
@@ -196,20 +173,12 @@ export class GithubService {
     this.logger.log(`Fetching pull requests from ${owner}/${repo} (limit: ${limit})...`);
     const allPRs: GithubPullRequest[] = [];
 
-    // IMPORTANT: We always prioritise state:'closed' because:
-    //   - GitHub API "closed" state includes ALL PRs with merged_at != null
-    //   - These are the training data for ML Lead Time prediction
-    //   - Without merged PRs, the ML model has no historical data and R²=0
-    //
-    // Split: 80% closed (merged) + 20% open
-    // At limit=50 this gives us 40 closed + 10 open = sufficient ML training data
-
     for (const state of ['closed', 'open'] as const) {
       if (allPRs.length >= limit) break;
 
       const stateLimit = state === 'closed'
-        ? Math.ceil(limit * 0.8)   // closed includes merged → needed for ML
-        : Math.ceil(limit * 0.2);  // open PRs → for predictions
+        ? Math.ceil(limit * 0.8)
+        : Math.ceil(limit * 0.2);
       let page = 1;
       let stateCount = 0;
 
@@ -220,7 +189,7 @@ export class GithubService {
         const { data } = await this.octokit.pulls.list({
           owner,
           repo,
-          state,          // 'closed' | 'open'  (GitHub: 'closed' ⊃ merged)
+          state,
           per_page: pageSize,
           page,
           sort: 'updated',
@@ -229,11 +198,9 @@ export class GithubService {
 
         if (data.length === 0) break;
 
-        // For 'closed': only keep PRs that were actually merged (have merged_at)
-        // For 'open': keep all valid PRs
         const validPRs = data.filter((pr) => {
           if (!pr.user) return false;
-          if (state === 'closed') return pr.merged_at !== null; // merged only!
+          if (state === 'closed') return pr.merged_at !== null;
           return true;
         }) as GithubPullRequest[];
 
@@ -247,13 +214,9 @@ export class GithubService {
       this.logger.debug(`State '${state}': fetched ${stateCount} PRs`);
     }
 
-    this.logger.log(`✅ Fetched ${allPRs.length} pull requests total (closed/merged first)`);
+    this.logger.log(`Fetched ${allPRs.length} pull requests total (closed/merged first)`);
     return allPRs.slice(0, limit);
   }
-
-
-  // ─── Отримання рев'ю для одного PR ────────────────────────────────────────
-  // API count: 1 запит на PR. Викликати тільки для merged PRs, не для всіх!
 
   async fetchReviewsForPR(
     owner: string,
@@ -273,8 +236,6 @@ export class GithubService {
       return [];
     }
   }
-
-  // ─── Перевірка rate limit ──────────────────────────────────────────────────
 
   async getRateLimit(): Promise<{ remaining: number; limit: number; reset: Date }> {
     const { data } = await this.octokit.rateLimit.get();

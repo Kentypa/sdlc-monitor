@@ -22,7 +22,6 @@ function Navigation() {
     e.preventDefault();
     if (!repoInput.trim()) return;
 
-    // Parse github url or "owner/repo" format
     try {
       if (repoInput.includes('github.com')) {
         const url = new URL(repoInput);
@@ -50,7 +49,6 @@ function Navigation() {
             </Link>
           </div>
 
-          {/* Search form in header */}
           <form onSubmit={handleSearch} className="flex-1 max-w-md mx-4 hidden md:block">
             <div className="relative">
               <input
@@ -63,7 +61,6 @@ function Navigation() {
             </div>
           </form>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-4">
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -73,7 +70,6 @@ function Navigation() {
             </button>
           </div>
 
-          {/* Mobile Menu Toggle */}
           <div className="md:hidden flex items-center gap-4">
             <button onClick={() => setDarkMode(!darkMode)} className="text-[var(--text-muted)]">
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}

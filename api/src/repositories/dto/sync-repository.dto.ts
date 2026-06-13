@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SyncRepositoryDto {
   @ApiProperty({
-    description: 'GitHub owner (организация или пользователь)',
+    description: 'GitHub owner',
     example: 'nestjs',
   })
   @IsString()
@@ -11,7 +11,7 @@ export class SyncRepositoryDto {
   owner: string;
 
   @ApiProperty({
-    description: 'Название репозитория',
+    description: 'repo name',
     example: 'nest',
   })
   @IsString()
@@ -22,7 +22,7 @@ export class SyncRepositoryDto {
   repo: string;
 
   @ApiPropertyOptional({
-    description: 'Количество коммитов для загрузки (по умолчанию 500)',
+    description: 'count commits to download',
     example: 500,
     minimum: 1,
     maximum: 1000,

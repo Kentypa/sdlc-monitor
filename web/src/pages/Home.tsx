@@ -26,7 +26,6 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
 
-      {/* Hero Section */}
       <div className="text-center max-w-3xl mb-12">
         <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-[var(--text-main)] mb-6">
           Predict Project Risks <br />
@@ -38,7 +37,6 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Search Input */}
       <div className="w-full max-w-2xl">
         <form onSubmit={handleAnalyze} className="relative group">
           <div className="relative flex items-center bg-[var(--bg-card)] rounded p-2 border border-[var(--border-color)] shadow-sm focus-within:border-[var(--accent)] transition-colors">
@@ -63,7 +61,6 @@ export default function Home() {
         </form>
       </div>
 
-      {/* Features Cards */}
       <div className="grid sm:grid-cols-3 gap-6 mt-20 w-full max-w-5xl">
         <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm rounded-md p-6 flex flex-col items-center text-center gap-4">
           <div className="h-12 w-12 rounded bg-[var(--bg-base)] flex items-center justify-center">

@@ -27,9 +27,9 @@ export default function BurnoutChart({ data }: BurnoutChartProps) {
       .attr('viewBox', `0 0 ${width} ${height}`);
 
     const getColor = (value: number) => {
-      if (value >= 0.6) return '#ef4444'; // red-500
-      if (value >= 0.3) return '#f59e0b'; // amber-500
-      return '#10b981';                   // emerald-500
+      if (value >= 0.6) return '#ef4444';
+      if (value >= 0.3) return '#f59e0b';
+      return '#10b981';
     };
 
     const x = d3.scaleBand()
@@ -41,13 +41,11 @@ export default function BurnoutChart({ data }: BurnoutChartProps) {
       .domain([0, 1])
       .range([height - margin.bottom, margin.top]);
 
-    // Initial structure setup (only runs once)
     if (svg.select('g.bars-layer').empty()) {
       svg.append('g').attr('class', 'grid');
       svg.append('g').attr('class', 'x-axis');
       svg.append('g').attr('class', 'y-axis');
-      
-      // Threshold lines
+
       svg.append('line').attr('class', 'warn-line');
       svg.append('text').attr('class', 'warn-text');
       svg.append('line').attr('class', 'crit-line');
@@ -57,7 +55,6 @@ export default function BurnoutChart({ data }: BurnoutChartProps) {
       svg.append('g').attr('class', 'labels-layer');
     }
 
-    // Update axes
     svg.select<SVGGElement>('g.x-axis')
       .attr('transform', `translate(0,${height - margin.bottom})`)
       .transition().duration(400)
@@ -81,12 +78,11 @@ export default function BurnoutChart({ data }: BurnoutChartProps) {
       .style('stroke', 'var(--border-color)')
       .style('stroke-dasharray', '3,3');
 
-    // Update thresholds
     svg.select('line.warn-line')
       .attr('x1', margin.left).attr('x2', width - margin.right)
       .attr('y1', y(0.3)).attr('y2', y(0.3))
       .style('stroke', '#f59e0b').style('stroke-width', 1.5).style('stroke-dasharray', '5,4');
-    
+
     svg.select('text.warn-text')
       .attr('x', margin.left + 6).attr('y', y(0.3) - 5)
       .attr('text-anchor', 'start')
@@ -97,14 +93,13 @@ export default function BurnoutChart({ data }: BurnoutChartProps) {
       .attr('x1', margin.left).attr('x2', width - margin.right)
       .attr('y1', y(0.6)).attr('y2', y(0.6))
       .style('stroke', '#ef4444').style('stroke-width', 2).style('stroke-dasharray', '5,4');
-    
+
     svg.select('text.crit-text')
       .attr('x', margin.left + 6).attr('y', y(0.6) - 5)
       .attr('text-anchor', 'start')
       .style('fill', '#ef4444').style('font-size', '11px').style('font-weight', 'bold')
       .text('CRITICAL threshold (0.6)');
 
-    // Bars with update pattern
     svg.select('g.bars-layer')
       .selectAll('rect')
       .data(data, (d: any) => d.login)
@@ -135,7 +130,6 @@ export default function BurnoutChart({ data }: BurnoutChartProps) {
           )
       );
 
-    // Labels with update pattern
     svg.select('g.labels-layer')
       .selectAll('text.value')
       .data(data, (d: any) => d.login)

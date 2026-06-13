@@ -10,14 +10,11 @@ import { AppController } from './app.controller';
 
 @Module({
   imports: [
-    // Глобальная конфигурация из .env
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
     }),
-    // Prisma ORM — глобальный модуль
     PrismaModule,
-    // GitHub синхронизация и репозитории
     RepositoriesModule,
     GithubModule,
     MetricsModule,
@@ -25,4 +22,4 @@ import { AppController } from './app.controller';
   ],
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule { }

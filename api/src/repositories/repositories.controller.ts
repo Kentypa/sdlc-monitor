@@ -22,34 +22,26 @@ import { SyncRepositoryDto } from './dto/sync-repository.dto';
 export class RepositoriesController {
   private readonly logger = new Logger(RepositoriesController.name);
 
-  constructor(private readonly repositoriesService: RepositoriesService) {}
+  constructor(private readonly repositoriesService: RepositoriesService) { }
 
-  /**
-   * GET /api/repositories
-   * Список всех синхронизированных репозиториев
-   */
   @Get()
-  @ApiOperation({ summary: 'Список синхронизированных репозиториев' })
-  @ApiResponse({ status: 200, description: 'Массив репозиториев с количеством коммитов и PR' })
+  @ApiOperation({ summary: 'Get synced repos' })
+  @ApiResponse({ status: 200, description: 'Array repos with count commits and PR' })
   findAll() {
     this.logger.log('Incoming request: [GET] /api/repositories');
     return this.repositoriesService.findAll();
   }
 
-  /**
-   * POST /api/repositories/sync
-   * Запускает синхронизацию данных GitHub для репозитория
-   */
   @Post('sync')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Синхронизировать репозиторий с GitHub',
+    summary: 'Sync repos with GitHyb',
     description:
-      'Загружает коммиты, Pull Requests и ревью. Сохраняет в БД. Занимает 30-120 секунд.',
+      'Downloads commits, pull requests, and reviews. Saves to the database. Takes 30-120 seconds.',
   })
   @ApiResponse({
     status: 200,
-    description: 'Результат синхронизации с количеством загруженных объектов',
+    description: 'Synchronization result with the number of downloaded objects',
     schema: {
       example: {
         repository: 'nestjs/nest',
@@ -62,8 +54,8 @@ export class RepositoriesController {
       },
     },
   })
-  @ApiResponse({ status: 404, description: 'Репозиторий не найден на GitHub' })
-  @ApiResponse({ status: 400, description: 'Неверный формат запроса' })
+  @ApiResponse({ status: 404, description: 'Repository not found' })
+  @ApiResponse({ status: 400, description: 'Invalid request format' })
   async sync(@Body() dto: SyncRepositoryDto) {
     this.logger.log(`Incoming request: [POST] /api/repositories/sync`, dto);
     const result = await this.repositoriesService.syncRepository(dto);
@@ -73,13 +65,9 @@ export class RepositoriesController {
     };
   }
 
-  /**
-   * POST /api/repositories/sync/:owner/:repo
-   * Примусова синхронізація репозиторію
-   */
   @Post('sync/:owner/:repo')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Примусова синхронізація репозиторію з GitHub' })
+  @ApiOperation({ summary: 'Forced synchronization of the repository with GitHub' })
   async syncRepository(@Param('owner') owner: string, @Param('repo') repo: string) {
     this.logger.log(`Incoming request: [POST] /api/repositories/sync/${owner}/${repo}`);
     const result = await this.repositoriesService.syncRepository({ owner, repo, commitLimit: 500 });
@@ -89,16 +77,12 @@ export class RepositoriesController {
     };
   }
 
-  /**
-   * GET /api/repositories/:owner/:repo
-   * Информация о конкретном репозитории
-   */
   @Get(':owner/:repo')
-  @ApiOperation({ summary: 'Получить информацию о репозитории' })
+  @ApiOperation({ summary: 'Get repos info' })
   @ApiParam({ name: 'owner', example: 'nestjs' })
   @ApiParam({ name: 'repo', example: 'nest' })
-  @ApiResponse({ status: 200, description: 'Данные репозитория' })
-  @ApiResponse({ status: 404, description: 'Репозиторий не синхронизирован' })
+  @ApiResponse({ status: 200, description: 'Repos info' })
+  @ApiResponse({ status: 404, description: 'Repository not found' })
   findOne(@Param('owner') owner: string, @Param('repo') repo: string) {
     this.logger.log(`Incoming request: [GET] /api/repositories/${owner}/${repo}`);
     return this.repositoriesService.findOne(owner, repo);

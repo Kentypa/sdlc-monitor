@@ -22,8 +22,6 @@ export function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
 
-// ─── API Types ───────────────────────────────────────────────────────────────
-
 interface ProcessMetrics {
   totalCommits: number;
   totalPullRequests: number;
@@ -82,8 +80,6 @@ interface GraphData {
 }
 
 const API_BASE = 'http://localhost:3000/api';
-
-// ─── Risk styling ─────────────────────────────────────────────────────────────
 
 const riskColorMap = {
   SAFE: 'text-emerald-600 bg-emerald-50 border-emerald-200',
@@ -225,7 +221,6 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[var(--border-color)] pb-6">
         <div>
           <h1 className="text-3xl font-bold text-[var(--text-main)] m-0">SDLC Dashboard</h1>
@@ -266,7 +261,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Process Metrics Cards ───────────────────────────────────────────── */}
       {processData && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm rounded-md p-5">
@@ -318,7 +312,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── ML: Ridge Lead Time Prediction ─────────────────────────────────── */}
       {mlData && (
         <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm rounded-md overflow-hidden">
           <div className="p-6 border-b border-[var(--border-color)] flex items-center justify-between">
@@ -334,7 +327,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* R² Badge */}
             <div className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-md border shadow-sm',
               mlData.rSquared >= 0.5
@@ -351,7 +343,6 @@ export default function Dashboard() {
           </div>
 
           <div className="p-6 grid md:grid-cols-2 gap-6">
-            {/* Recommendations */}
             {mlData.recommendations.length > 0 && (
               <div>
                 <h3 className="text-sm font-bold text-indigo-400 mb-3 flex items-center gap-1.5">
@@ -368,7 +359,6 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Open PR Predictions */}
             {mlData.openPRPredictions.length > 0 ? (
               <div>
                 <h3 className="text-sm font-bold text-indigo-400 mb-3 flex items-center gap-1.5">
@@ -416,7 +406,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── Social Graph ─────────────────────────────────────────────────────── */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm rounded-md overflow-hidden">
         <div className="p-6 border-b border-[var(--border-color)] flex items-start justify-between">
           <div className="flex items-center gap-2">
@@ -431,7 +420,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Bus Factor Badge */}
           {graphData.busFactor > 0 && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-md border text-[var(--accent)] bg-blue-50 border-blue-200 shadow-sm shrink-0">
               <Bus className="h-5 w-5" />
@@ -448,7 +436,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Bus Factor explanation */}
         {graphData.busFactor > 0 && (
           <div className={cn(
             'px-6 py-3 text-sm border-b border-[var(--border-color)]',
@@ -486,7 +473,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Weight Controls ─────────────────────────────────────────────────── */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm rounded-md overflow-hidden">
         <div className="p-6 border-b border-[var(--border-color)]">
           <h2 className="text-xl font-bold text-[var(--text-main)] m-0">
@@ -497,7 +483,6 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="p-6 grid md:grid-cols-2 gap-8">
-          {/* Base Formula */}
           <div className="bg-[var(--bg-base)] p-4 rounded-xl border border-[var(--border-color)]/50">
             <h3 className="text-sm font-bold text-indigo-400 mb-4">Base Formula Weights (BI)</h3>
             <div className="space-y-4">
@@ -530,7 +515,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Extended Formula */}
           <div className="bg-[var(--bg-base)] p-4 rounded-xl border border-[var(--border-color)]/50">
             <h3 className="text-sm font-bold text-indigo-400 mb-4">Extended Formula Weights (BI ext)</h3>
             <div className="space-y-4">
@@ -565,7 +549,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Burnout Chart ─────────────────────────────────────────────────────── */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm rounded-md overflow-hidden">
         <div className="p-6 border-b border-[var(--border-color)] flex items-center gap-2">
           <Flame className="h-5 w-5 text-[var(--text-muted)]" />
@@ -583,7 +566,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Burnout Detail Table ──────────────────────────────────────────────── */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm rounded-md overflow-hidden">
         <div className="p-6 border-b border-[var(--border-color)]">
           <h2 className="text-xl font-bold text-[var(--text-main)] m-0">
