@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Post, Logger } from '@nestjs/common';
-import { ApiOperation, ApiTags, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Logger, Param, Post } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { MetricsService } from './metrics.service';
 
 @ApiTags('metrics')
@@ -10,7 +10,7 @@ export class MetricsController {
   constructor(private readonly metricsService: MetricsService) {}
 
   @Get(':owner/:repo/burnout')
-  @ApiOperation({ summary: 'Получить Burnout Index для разработчиков репозитория' })
+  @ApiOperation({ summary: 'Get burnout index for developer' })
   @ApiParam({ name: 'owner', example: 'nestjs' })
   @ApiParam({ name: 'repo', example: 'nest' })
   async getBurnout(@Param('owner') owner: string, @Param('repo') repo: string) {
@@ -19,21 +19,21 @@ export class MetricsController {
   }
 
   @Get(':owner/:repo/graph')
-  @ApiOperation({ summary: 'Получить Social Graph (Code Review)' })
+  @ApiOperation({ summary: 'Get Social Graph (Code Review)' })
   async getSocialGraph(@Param('owner') owner: string, @Param('repo') repo: string) {
     this.logger.log(`Incoming request: [GET] /api/metrics/${owner}/${repo}/graph`);
     return this.metricsService.calculateSocialGraph(owner, repo);
   }
 
   @Get(':owner/:repo/process')
-  @ApiOperation({ summary: 'Получить метрики процесса разработки (Lead Time, Churn)' })
+  @ApiOperation({ summary: 'Get (Lead Time, Churn)' })
   async getProcessMetrics(@Param('owner') owner: string, @Param('repo') repo: string) {
     this.logger.log(`Incoming request: [GET] /api/metrics/${owner}/${repo}/process`);
     return this.metricsService.calculateProcessMetrics(owner, repo);
   }
 
   @Post(':owner/:repo/snapshot')
-  @ApiOperation({ summary: 'Сгенерировать и сохранить полный снапшот метрик' })
+  @ApiOperation({ summary: 'Generate and save snapshot of metrics' })
   async generateSnapshot(@Param('owner') owner: string, @Param('repo') repo: string) {
     this.logger.log(`Incoming request: [POST] /api/metrics/${owner}/${repo}/snapshot`);
     return this.metricsService.generateSnapshot(owner, repo);

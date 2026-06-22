@@ -1,19 +1,19 @@
 import {
-  Injectable,
-  Logger,
-  NotFoundException,
   BadRequestException,
   HttpException,
   HttpStatus,
+  Injectable,
   InternalServerErrorException,
+  Logger,
+  NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { GithubService } from '../github/github.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { SyncRepositoryDto } from './dto/sync-repository.dto';
 
 function isOvertimeCommit(date: Date): boolean {
   const hour = date.getUTCHours();
-  const dayOfWeek = date.getUTCDay(); // 0 = воскресенье, 6 = суббота
+  const dayOfWeek = date.getUTCDay();
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
   const isNightOrEarlyMorning = hour < 9 || hour >= 19;
   return isWeekend || isNightOrEarlyMorning;
